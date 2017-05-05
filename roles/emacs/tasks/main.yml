@@ -1,0 +1,10 @@
+---
+- name: install emacs
+  apt: name=emacs24-nox
+       state=present
+       update_cache=yes
+
+- name: emacs settings
+  git: repo=https://github.com/subaru45/.emacs.d
+       dest=~/.emacs.d
+  become: no
