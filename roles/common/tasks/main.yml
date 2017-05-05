@@ -1,0 +1,40 @@
+---
+# timezone
+- name: set time zone
+  copy: content='Asia/Tokyo'
+        dest=/etc/timezone
+        owner=root group=root mode='u=rw,g=r,o=r'
+        backup=yes
+
+- name: update timezone
+  command: dpkg-reconfigure --frontend noninteractive tzdata
+
+# ntp
+- name: install ntp
+  apt: name=ntp state=present update_cache=yes
+
+- name: install ntpdate
+  apt: name=ntpdate state=present
+
+- name: copy ntp configuration
+  copy: src=templates/ntp.conf
+        dest=/etc/ntp.conf
+
+- name: stop ntp (to force update)
+  service: name=ntp state=stopped
+
+- name: force synchronizing date
+  shell: ntpdate ntp.nict.jp
+
+- name: start ntp
+  service: name=ntp state=started
+
+- name: get ntp status
+  shell: ntpq -p
+  register: result
+
+- name: print ntp status
+  debug: var=result.stdout_lines
+
+- name: install git
+  apt: name=git state=present
