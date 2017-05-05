@@ -1,0 +1,44 @@
+---
+# install dependencies
+- name: install autoconf
+  apt: name=autoconf state=present update_cache=yes
+  become: yes
+
+- name: install build tools
+  apt: name=build-essential state=present
+  become: yes
+
+- name: install libcurl-dev
+  apt: name=libcurl4-openssl-dev state=present
+  become: yes
+
+# build roswell
+- name: clone roswell sources
+  git: repo=https://github.com/roswell/roswell.git
+       dest=/tmp/roswell/
+       version={{ roswell_version }}
+
+- name: bootstrap roswell
+  shell: sh bootstrap
+  args:
+    chdir: /tmp/roswell/
+    creates: configure
+
+- name: configure roswell
+  shell: sh configure
+  args:
+    chdir: /tmp/roswell/
+    creates: Makefile
+
+- name: build roswell
+  make:
+    chdir: /tmp/roswell/
+    target: all
+
+# install roswell
+- name: install roswell
+  make:
+    chdir: /tmp/roswell
+    target: install
+  become: yes
+
